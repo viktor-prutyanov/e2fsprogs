@@ -72,6 +72,9 @@ as the pathname to the image file.
 .B \-x
 print the detailed group information block numbers in hexadecimal format
 .TP
+@JSON_MAN_COMMENT@.B \-j
+@JSON_MAN_COMMENT@use JSON output format
+@JSON_MAN_COMMENT@.TP
 .B \-V
 print the version number of
 .B dumpe2fs
