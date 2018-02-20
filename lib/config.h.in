@@ -12,6 +12,9 @@
 /* Define to 1 if debugging ext3/4 journal code */
 #undef CONFIG_JBD_DEBUG
 
+/* Define to 1 if the JSON format should be enabled */
+#undef CONFIG_JSON
+
 /* Define to 1 to enable mmp support */
 #undef CONFIG_MMP
 

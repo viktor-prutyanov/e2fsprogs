@@ -18,3 +18,5 @@ $prefix			@prefix@
 JDEV			
 # Enable the documentation for the tdb profile in e2fsck.conf's man page
 TDB_MAN_COMMENT		@TDB_MAN_COMMENT@
+# Enable the documentation for JSON in dumpe2fs's man page
+JSON_MAN_COMMENT	@JSON_MAN_COMMENT@
