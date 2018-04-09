@@ -759,6 +759,8 @@ LIBUUID
 PKG_CONFIG_LIBDIR
 PKG_CONFIG_PATH
 PKG_CONFIG
+JSON_MAN_COMMENT
+JSON_CMT
 TEST_IO_CMT
 PRIVATE_LIBS_CMT
 LDFLAG_DYNAMIC
@@ -867,6 +869,7 @@ enable_hardening
 enable_jbd_debug
 enable_blkid_debug
 enable_testio_debug
+enable_json
 enable_libuuid
 enable_libblkid
 enable_backtrace
@@ -1541,6 +1544,7 @@ Optional Features:
   --enable-jbd-debug  	  enable journal debugging
   --enable-blkid-debug    enable blkid debugging
   --disable-testio-debug  disable the use of the test I/O manager for debugging
+  --enable-json  enable the use of the JSON format
   --enable-libuuid	  build and use private uuid library
   --enable-libblkid	  build and use private blkid library
   --disable-backtrace	  disable use backtrace
@@ -5110,6 +5114,34 @@ $as_echo "#define CONFIG_TESTIO_DEBUG 1" >>confdefs.h
 TEST_IO_CMT=
 
 fi
+
+
+# Check whether --enable-json was given.
+if test "${enable_json+set}" = set; then :
+  enableval=$enable_json;
+if test "$enableval" = "no"
+then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling JSON format" >&5
+$as_echo "Disabling JSON format" >&6; }
+	JSON_CMT="#"
+	JSON_MAN_COMMENT='.\"'
+else
+	JSON_CMT=
+	JSON_MAN_COMMENT=
+	$as_echo "#define CONFIG_JSON 1" >>confdefs.h
+
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: Enabling JSON format" >&5
+$as_echo "Enabling JSON format" >&6; }
+fi
+
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: Disabling JSON format by default" >&5
+$as_echo "Disabling JSON format by default" >&6; }
+JSON_CMT="#"
+JSON_MAN_COMMENT='.\"'
+
+fi
+
 
 
 

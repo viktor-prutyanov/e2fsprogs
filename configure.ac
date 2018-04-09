@@ -438,6 +438,31 @@ TEST_IO_CMT=
 )
 AC_SUBST(TEST_IO_CMT)
 dnl
+dnl handle --enable-json
+dnl
+AC_ARG_ENABLE([json],
+[  --enable-json  enable the use of the JSON format],
+AH_TEMPLATE([CONFIG_JSON],
+	[Define to 1 if the JSON format should be enabled])
+if test "$enableval" = "no"
+then
+	AC_MSG_RESULT([Disabling JSON format])
+	JSON_CMT="#"
+	JSON_MAN_COMMENT='.\"'
+else
+	JSON_CMT=
+	JSON_MAN_COMMENT=""
+	AC_DEFINE(CONFIG_JSON, 1)
+	AC_MSG_RESULT([Enabling JSON format])
+fi
+,
+AC_MSG_RESULT([Disabling JSON format by default])
+JSON_CMT="#"
+JSON_MAN_COMMENT='.\"'
+)
+AC_SUBST(JSON_CMT)
+AC_SUBST(JSON_MAN_COMMENT)
+dnl
 dnl handle --disable-libuuid
 dnl
 PKG_PROG_PKG_CONFIG
