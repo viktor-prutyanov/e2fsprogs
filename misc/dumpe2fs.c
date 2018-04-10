@@ -894,7 +894,9 @@ try_open_again:
 		if (grp_only)
 			goto just_descriptors;
 #ifdef CONFIG_JSON
-		if (!json)
+		if (json)
+			fill_json_super(dump_obj, fs->super);
+		else
 			list_super (fs->super);
 #else
 		list_super (fs->super);
