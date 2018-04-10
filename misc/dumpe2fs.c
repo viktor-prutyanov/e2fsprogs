@@ -626,6 +626,37 @@ static void list_bad_blocks(ext2_filsys fs, int dump)
 	ext2fs_badblocks_list_free(bb_list);
 }
 
+#ifdef CONFIG_JSON
+static void fill_json_bad_blocks(ext2_filsys fs, struct json_obj *obj)
+{
+	badblocks_list		bb_list = 0;
+	badblocks_iterate	bb_iter;
+	blk_t			blk;
+	errcode_t		retval;
+	struct json_list	*bb_json_list;
+	char	buf[32];
+
+	bb_json_list = json_list_create_in_obj(obj, "bad-blocks", JSON_VAL_STRING);
+	retval = ext2fs_read_bb_inode(fs, &bb_list);
+	if (retval) {
+		com_err("ext2fs_read_bb_inode", retval, 0);
+		return;
+	}
+	retval = ext2fs_badblocks_list_iterate_begin(bb_list, &bb_iter);
+	if (retval) {
+		com_err("ext2fs_badblocks_list_iterate_begin", retval,
+			"%s", _("while printing bad block list"));
+		return;
+	}
+	while (ext2fs_badblocks_list_iterate(bb_iter, &blk)) {
+		snprintf(buf, sizeof(buf), "%u", blk);
+		json_list_add_str(bb_json_list, buf);
+	}
+	ext2fs_badblocks_list_iterate_end(bb_iter);
+	ext2fs_badblocks_list_free(bb_list);
+}
+#endif
+
 static void fill_inline_journal_information(ext2_filsys fs, char *buf,
 				size_t size)
 {
@@ -921,7 +952,9 @@ try_open_again:
 		blocks64 = 1;
 	if (print_badblocks) {
 #ifdef CONFIG_JSON
-		if (!json)
+		if (json)
+			fill_json_bad_blocks(fs, dump_obj);
+		else
 			list_bad_blocks(fs, 1);
 #else
 		list_bad_blocks(fs, 1);
@@ -962,7 +995,9 @@ try_open_again:
 			print_inline_journal_information(fs);
 #endif
 #ifdef CONFIG_JSON
-		if (!json)
+		if (json)
+			fill_json_bad_blocks(fs, dump_obj);
+		else
 			list_bad_blocks(fs, 0);
 #else
 		list_bad_blocks(fs, 0);
