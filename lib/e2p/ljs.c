@@ -112,6 +112,7 @@ void e2p_list_journal_super(FILE *f, char *journal_sb_buf,
 			(int) ntohl(jsb->s_errno));
 }
 
+#ifdef CONFIG_JSON
 void e2p_fill_json_journal_super(struct json_obj *obj, char *journal_sb_buf,
 			    int exp_block_size, int flags)
 {
@@ -168,3 +169,4 @@ void e2p_fill_json_journal_super(struct json_obj *obj, char *journal_sb_buf,
 	if (jsb->s_errno != 0)
 		json_obj_add_fmt_buf_str(journal_obj, "journal-errno", buf, sizeof(buf), "%d", (int) ntohl(jsb->s_errno));
 }
+#endif

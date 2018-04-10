@@ -37,6 +37,7 @@ static void print_user (unsigned short uid, FILE *f)
 		fprintf(f, "(user %s)\n", pw->pw_name);
 }
 
+#ifdef CONFIG_JSON
 static void fill_json_user(struct json_obj *obj, unsigned short uid)
 {
 	struct passwd *pw = getpwuid(uid);
@@ -45,6 +46,7 @@ static void fill_json_user(struct json_obj *obj, unsigned short uid)
 	if (pw)
 		json_obj_add_str(obj, "user", pw->pw_name);
 }
+#endif
 
 static void print_group (unsigned short gid, FILE *f)
 {
@@ -58,6 +60,7 @@ static void print_group (unsigned short gid, FILE *f)
 		fprintf(f, "(group %s)\n", gr->gr_name);
 }
 
+#ifdef CONFIG_JSON
 static void fill_json_group(struct json_obj *obj, unsigned short gid)
 {
 	struct group *gr = getgrgid(gid);
@@ -66,6 +69,7 @@ static void fill_json_group(struct json_obj *obj, unsigned short gid)
 	if (gr)
 		json_obj_add_str(obj, "group", gr->gr_name);
 }
+#endif
 
 #define MONTH_INT (86400 * 30)
 #define WEEK_INT (86400 * 7)
@@ -135,6 +139,7 @@ static void print_features(struct ext2_super_block * s, FILE *f)
 #endif
 }
 
+#ifdef CONFIG_JSON
 static void fill_json_features(struct json_obj *obj,
 							   struct ext2_super_block *s)
 {
@@ -152,6 +157,7 @@ static void fill_json_features(struct json_obj *obj,
 	}
 #endif
 }
+#endif
 
 static void print_mntopts(struct ext2_super_block * s, FILE *f)
 {
@@ -178,6 +184,7 @@ static void print_mntopts(struct ext2_super_block * s, FILE *f)
 #endif
 }
 
+#ifdef CONFIG_JSON
 static void fill_json_mntopts(struct json_obj *obj,
 							  struct ext2_super_block *s)
 {
@@ -197,6 +204,7 @@ static void fill_json_mntopts(struct json_obj *obj,
 	}
 #endif
 }
+#endif
 
 static void print_super_flags(struct ext2_super_block * s, FILE *f)
 {
@@ -224,6 +232,7 @@ static void print_super_flags(struct ext2_super_block * s, FILE *f)
 		fputs("(none)\n", f);
 }
 
+#ifdef CONFIG_JSON
 static void fill_json_super_flags(struct json_obj *obj,
 								  struct ext2_super_block *s)
 {
@@ -241,7 +250,7 @@ static void fill_json_super_flags(struct json_obj *obj,
 	if (s->s_flags & EXT2_FLAGS_TEST_FILESYS)
 		json_list_add_str(list, "test_filesystem");
 }
-
+#endif
 
 static __u64 e2p_blocks_count(struct ext2_super_block *super)
 {
@@ -558,6 +567,7 @@ void list_super (struct ext2_super_block * s)
 	list_super2(s, stdout);
 }
 
+#ifdef CONFIG_JSON
 static void fill_json_time(struct json_obj *obj, const char *key, char *buf,
 						   time_t tm)
 {
@@ -569,7 +579,9 @@ static void fill_json_time(struct json_obj *obj, const char *key, char *buf,
 		json_obj_add_str(obj, key, buf);
 	}
 }
+#endif
 
+#ifdef CONFIG_JSON
 void fill_json_super(struct json_obj *obj, struct ext2_super_block * sb)
 {
 	int inode_blocks_per_group;
@@ -839,3 +851,4 @@ void fill_json_super(struct json_obj *obj, struct ext2_super_block * sb)
 		json_obj_add_fmt_buf_str(super_obj, "checksum-seed", buf, sizeof(buf),
 			"0x%08x", sb->s_checksum_seed);
 }
+#endif
