@@ -626,17 +626,15 @@ static void list_bad_blocks(ext2_filsys fs, int dump)
 	ext2fs_badblocks_list_free(bb_list);
 }
 
-static void print_inline_journal_information(ext2_filsys fs)
+static void fill_inline_journal_information(ext2_filsys fs, char *buf,
+				size_t size)
 {
 	journal_superblock_t	*jsb;
 	struct ext2_inode	inode;
 	ext2_file_t		journal_file;
 	errcode_t		retval;
 	ino_t			ino = fs->super->s_journal_inum;
-	char			buf[1024];
 
-	if (fs->flags & EXT2_FLAG_IMAGE_FILE)
-		return;
 	retval = ext2fs_read_inode(fs, ino,  &inode);
 	if (retval) {
 		com_err(program_name, retval, "%s",
@@ -649,7 +647,7 @@ static void print_inline_journal_information(ext2_filsys fs)
 			_("while opening journal inode"));
 		exit(1);
 	}
-	retval = ext2fs_file_read(journal_file, buf, sizeof(buf), 0);
+	retval = ext2fs_file_read(journal_file, buf, size, 0);
 	if (retval) {
 		com_err(program_name, retval, "%s",
 			_("while reading journal super block"));
@@ -662,13 +660,34 @@ static void print_inline_journal_information(ext2_filsys fs)
 			_("Journal superblock magic number invalid!\n"));
 		exit(1);
 	}
+}
+
+static void print_inline_journal_information(ext2_filsys fs)
+{
+	char buf[1024];
+
+	if (fs->flags & EXT2_FLAG_IMAGE_FILE)
+		return;
+	fill_inline_journal_information(fs, buf, sizeof(buf));
 	e2p_list_journal_super(stdout, buf, fs->blocksize, 0);
 }
 
-static void print_journal_information(ext2_filsys fs)
+#ifdef CONFIG_JSON
+static void fill_json_inline_journal_information(ext2_filsys fs,
+				struct json_obj *obj)
+{
+	char buf[1024];
+
+	if (fs->flags & EXT2_FLAG_IMAGE_FILE)
+		return;
+	fill_inline_journal_information(fs, buf, sizeof(buf));
+	e2p_fill_json_journal_super(obj, buf, fs->blocksize, 0);
+}
+#endif
+
+static void fill_journal_information(ext2_filsys fs, char *buf)
 {
 	errcode_t	retval;
-	char		buf[1024];
 	journal_superblock_t	*jsb;
 
 	/* Get the journal superblock */
@@ -687,8 +706,25 @@ static void print_journal_information(ext2_filsys fs)
 			_("Couldn't find journal superblock magic numbers"));
 		exit(1);
 	}
+}
+
+static void print_journal_information(ext2_filsys fs)
+{
+	char buf[1024];
+
+	fill_journal_information(fs, buf);
 	e2p_list_journal_super(stdout, buf, fs->blocksize, 0);
 }
+
+#ifdef CONFIG_JSON
+static void fill_json_journal_information(ext2_filsys fs, struct json_obj *obj)
+{
+	char buf[1024];
+
+	fill_journal_information(fs, buf);
+	e2p_fill_json_journal_super(obj, buf, fs->blocksize, 0);
+}
+#endif
 
 static void parse_extended_opts(const char *opts, blk64_t *superblock,
 				int *blocksize)
@@ -902,13 +938,20 @@ try_open_again:
 		list_super (fs->super);
 #endif
 #ifdef CONFIG_JSON
-		if (!json && ext2fs_has_feature_journal_dev(fs->super)) {
-			print_journal_information(fs);
+		if (ext2fs_has_feature_journal_dev(fs->super)) {
+			if (json)
+				fill_json_journal_information(fs, dump_obj);
+			else
+				print_journal_information(fs);
 			goto out;
 		}
-		if (!json && ext2fs_has_feature_journal(fs->super) &&
-		    (fs->super->s_journal_inum != 0))
-			print_inline_journal_information(fs);
+		if (ext2fs_has_feature_journal(fs->super) &&
+		    (fs->super->s_journal_inum != 0)) {
+			if (json)
+				fill_json_inline_journal_information(fs, dump_obj);
+			else
+				print_inline_journal_information(fs);
+		}
 #else
 		if (ext2fs_has_feature_journal_dev(fs->super)) {
 			print_journal_information(fs);
